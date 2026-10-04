@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Combat Reference — Sim Edition</title>
+<style>
+:root{
+  --bg:#0b0f14;
+  --panel:#111821;
+  --panel2:#16202b;
+  --line:#263545;
+  --text:#e8eef5;
+  --muted:#9badbd;
+  --accent:#72a7ff;
+  --good:#7bd88f;
+  --warn:#ffca6a;
+  --bad:#ff7f7f;
+  --chip:#1d2a38;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+  background:linear-gradient(180deg,#0a0e13 0%,#0d131a 100%);
+  color:var(--text);
+}
+header{
+  padding:28px 24px 18px;
+  border-bottom:1px solid var(--line);
+  background:rgba(10,14,19,.96);
+  position:sticky;top:0;z-index:5;
+  backdrop-filter:blur(10px);
+}
+header h1{margin:0 0 8px;font-size:clamp(24px,4vw,38px)}
+header p{margin:0;color:var(--muted);max-width:950px}
+main{max-width:1400px;margin:auto;padding:24px;display:grid;grid-template-columns:340px 1fr;gap:22px}
+@media(max-width:980px){main{grid-template-columns:1fr}header{position:static}}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 12px 32px rgba(0,0,0,.18);
+}
+.sidebar{display:flex;flex-direction:column;gap:16px;height:max-content;position:sticky;top:120px}
+@media(max-width:980px){.sidebar{position:static}}
+label{display:block;font-size:13px;color:var(--muted);margin:0 0 7px}
+select,input[type="range"]{
+  width:100%;
+}
+select{
+  background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:10px;padding:11px 12px;
+}
+.rangeRow{display:grid;grid-template-columns:1fr 72px;gap:10px;align-items:center}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--chip);border:1px solid var(--line);border-radius:999px;
+  padding:6px 10px;font-size:12px;color:#c9d8e6
+}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sectionTitle h2,.sectionTitle h3{margin:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{padding:14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line)}
+.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12px;color:var(--muted);margin-top:4px}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:850px){.cards{grid-template-columns:1fr}}
+.card{
+  background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:15px;
+  transition:.18s transform,.18s border-color;cursor:pointer
+}
+.card:hover{transform:translateY(-2px);border-color:#3d5670}
+.card h4{margin:0 0 8px;font-size:17px}
+.card p{margin:0 0 10px;color:var(--muted);line-height:1.45}
+.tag{display:inline-block;margin:3px 5px 0 0;padding:4px 8px;border-radius:999px;background:#203044;color:#c8d9eb;font-size:11px}
+.tag.good{background:#173322;color:#a8e6b6}
+.tag.warn{background:#3a2d15;color:#ffd78a}
+.tag.bad{background:#3b1f20;color:#ffaaaa}
+.reco{
+  border-left:4px solid var(--accent);background:#121d29;padding:14px 15px;border-radius:10px;
+  color:#dce8f5;line-height:1.55
+}
+.svgWrap{background:#0b1219;border:1px solid var(--line);border-radius:14px;padding:10px}
+svg{width:100%;height:360px;display:block}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:12px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{
+  border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:8px 12px;
+  border-radius:10px;cursor:pointer
+}
+.tab.active{background:#203553;border-color:#3e6da6}
+.detail{line-height:1.58}
+.detail h3{margin:4px 0 8px}.detail ul{padding-left:20px}
+.small{font-size:12px;color:var(--muted)}
+button{
+  background:#1d3d63;color:white;border:1px solid #355f8f;border-radius:10px;padding:10px 13px;
+  cursor:pointer
+}
+button:hover{filter:brightness(1.08)}
+.footerNote{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Air Combat Reference — Sim Edition</h1>
+  <p>
+    Интерактивный справочник по воздушному бою в исторических авиасимуляторах:
+    энергетический бой, парные действия, оборонительные манёвры и выбор тактики по ситуации.
+  </p>
+</header>
+
+<main>
+  <aside class="sidebar panel">
+    <div>
+      <label>Ваш самолёт</label>
+      <select id="ownAircraft">
+        <option value="bf109">Bf 109 G-14</option>
+        <option value="la5">La-5FN</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Противник</label>
+      <select id="enemyAircraft">
+        <option value="la5">La-5FN</option>
+        <option value="bf109">Bf 109 G-14</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Режим</label>
+      <select id="mode">
+        <option value="pair">2×2 — бой парами</option>
+        <option value="duel">1×1 — дуэль</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Ваша высота</label>
+      <div class="rangeRow">
+        <input id="ownAlt" type="range" min="500" max="6000" step="250" value="3500">
+        <span class="badge" id="ownAltOut">3500 м</span>
+      </div>
+    </div>
+
+    <div>
+      <label>Высота противника</label>
+      <div class="rangeRow">
+        <input id="enemyAlt" type="range" min="500" max="6000" step="250" value="2250">
+        <span class="badge" id="enemyAltOut">2250 м</span>
+      </div>
+    </div>
+
+    <div>
+      <label>Ваш запас энергии</label>
+      <select id="energy">
+        <option value="high">Высокий</option>
+        <option value="equal">Сопоставимый</option>
+        <option value="low">Низкий</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Позиция</label>
+      <select id="position">
+        <option value="offensive">Есть инициатива</option>
+        <option value="neutral">Нейтральная</option>
+        <option value="defensive">Под атакой</option>
+      </select>
+    </div>
+
+    <button id="randomBtn">Случайный сценарий</button>
+    <div class="small">Все рекомендации предназначены для симуляторов и учебного разбора исторической тактики.</div>
+  </aside>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <div class="panel">
+      <div class="sectionTitle">
+        <h2>Оценка ситуации</h2>
+        <span class="badge" id="statusBadge">инициатива</span>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="v" id="altDelta">+1250 м</div><div class="l">разница высот</div></div>
+        <div class="kpi"><div class="v" id="energyScore">Высокая</div><div class="l">энергия</div></div>
+        <div class="kpi"><div class="v" id="favEnv">вертикаль</div><div class="l">выгодная среда</div></div>
+        <div class="kpi"><div class="v" id="pairValue">ключевая</div><div class="l">роль пары</div></div>
+      </div>
+      <div class="reco" id="headlineReco" style="margin-top:14px"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <div class="sectionTitle"><h3>Схема боя</h3><span class="small">условная визуализация</span></div>
+        <div class="svgWrap">
+          <svg id="battleSvg" viewBox="0 0 760 360" aria-label="Схема воздушного боя">
+            <defs>
+              <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L9,3 z" fill="#72a7ff"/>
+              </marker>
+              <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L9,3 z" fill="#ff7f7f"/>
+              </marker>
+            </defs>
+            <line x1="55" y1="300" x2="705" y2="300" stroke="#314252" stroke-width="2"/>
+            <g id="ownPath"></g>
+            <g id="enemyPath"></g>
+            <g id="labels"></g>
+          </svg>
+        </div>
+        <div class="legend">
+          <span><span class="dot" style="background:#72a7ff"></span> ваша группа</span>
+          <span><span class="dot" style="background:#ff7f7f"></span> противник</span>
+          <span>Чем выше линия — тем больше условный запас высоты/энергии.</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionTitle"><h3>Логика боя</h3></div>
+        <div id="logicText" class="detail"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="sectionTitle">
+        <h2>Тактическая библиотека</h2>
+        <span class="small">нажмите на карточку</span>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-filter="all">Все</button>
+        <button class="tab" data-filter="offense">Атака</button>
+        <button class="tab" data-filter="defense">Оборона</button>
+        <button class="tab" data-filter="pair">Пара</button>
+        <button class="tab" data-filter="energy">Энергия</button>
+      </div>
+      <div class="cards" id="tacticCards"></div>
+    </div>
+
+    <div class="panel">
+      <div class="sectionTitle"><h2>Разбор выбранной тактики</h2></div>
+      <div id="detail" class="detail">
+        Выберите карточку выше.
+      </div>
+    </div>
+
+    <div class="footerNote">
+      Учебная страница для исторических авиасимуляторов. Характеристики самолётов упрощены и используются как тактические профили, а не как точная инженерная модель.
+    </div>
+  </section>
+</main>
+
+<script>
+const aircraft = {
+  bf109:{
+    name:"Bf 109 G-14",
+    low:"хорош",
+    high:"очень хорош",
+    vertical:"сильный",
+    turn:"средний",
+    strengths:["вертикальный манёвр","набор высоты","разгон после прохода","удержание инициативы"],
+    weak:["затяжной низковысотный вираж","долгое сопровождение цели"]
+  },
+  la5:{
+    name:"La-5FN",
+    low:"очень хорош",
+    high:"средний",
+    vertical:"хороший",
+    turn:"сильный",
+    strengths:["низкая и средняя высота","маневренный бой","резкий оборонительный break","контратака после перелёта"],
+    weak:["затяжная погоня вверх","потеря скорости при попытке дотянуться до противника"]
+  }
+};
+
+const tactics = [
+  {
+    id:"bnz", cat:["offense","energy"], name:"Энергетический проход",
+    desc:"Атака с избытком высоты и скорости с последующим разрывом дистанции.",
+    tags:["высота","инициатива","короткий контакт"],
+    body:`<h3>Энергетический проход</h3>
+    <p><b>Когда применять:</b> вы выше или быстрее противника и не хотите терять запас энергии.</p>
+    <ul><li>Не превращайте первый проход в затяжной вираж.</li><li>После пересечения сохраняйте скорость и лишь затем возвращайтесь в набор.</li><li>Главная цель — нарушить строй и заставить противника реагировать.</li></ul>
+    <p><b>Типичная ошибка:</b> немедленно довернуть вслед за целью и отдать всё преимущество высоты.</p>`
+  },
+  {
+    id:"hiyo", cat:["offense","energy"], name:"High yo-yo",
+    desc:"Уход выше плоскости виража для снижения угловой скорости и сохранения энергии.",
+    tags:["переразгон","контроль дистанции","вертикаль"],
+    body:`<h3>High yo-yo</h3><p>Полезен, когда вы слишком быстро сближаетесь с маневрирующей целью.</p>
+    <ul><li>Переводите часть скорости в высоту.</li><li>Срезайте угол повторного входа.</li><li>Возвращайтесь в атаку только когда геометрия снова выгодна.</li></ul>`
+  },
+  {
+    id:"lowyo", cat:["offense","energy"], name:"Low yo-yo",
+    desc:"Короткий уход ниже траектории для ускорения и сокращения радиуса сближения.",
+    tags:["догон","скорость","перехват"],
+    body:`<h3>Low yo-yo</h3><p>Применяется, когда нужно быстро сократить дистанцию без длительного висения на хвосте.</p>
+    <ul><li>Понижение даёт ускорение.</li><li>Затем энергия возвращается в подъём к линии цели.</li><li>Не использовать слишком глубоко у земли.</li></ul>`
+  },
+  {
+    id:"break", cat:["defense"], name:"Defensive break",
+    desc:"Резкий поворот поперёк линии атаки для увеличения угловой скорости цели.",
+    tags:["оборона","срыв сопровождения","overshoot"],
+    body:`<h3>Defensive break</h3><p>Главная задача — заставить атакующего перерасходовать угол и скорость.</p>
+    <ul><li>Манёвр должен быть своевременным, а не слишком ранним.</li><li>После срыва атаки оцените: разрываться или переходить в reversal.</li><li>Не зацикливайтесь на полном круге, если достаточно одного изменения направления.</li></ul>`
+  },
+  {
+    id:"scissors", cat:["defense"], name:"Ножницы",
+    desc:"Серия смен направлений, рассчитанная на принуждение более быстрого преследователя к перелёту.",
+    tags:["overshoot","малые скорости","опасный режим"],
+    body:`<h3>Ножницы</h3><p>Подходят как крайний оборонительный вариант, когда противник уже близко и быстрее.</p>
+    <ul><li>Работают лучше при хорошей управляемости на малой скорости.</li><li>Требуют постоянного контроля второго противника в бою 2×2.</li><li>В парном бою затяжные ножницы опасны: вы становитесь предсказуемой целью для ведомого.</li></ul>`
+  },
+  {
+    id:"dragbag", cat:["pair","defense"], name:"Drag & Bag",
+    desc:"Один самолёт вытягивает преследователя на линию атаки напарника.",
+    tags:["пара","приманка","взаимное прикрытие"],
+    body:`<h3>Drag & Bag</h3><p>Классическая логика взаимодействия пары: один создаёт предсказуемую траекторию противника, второй получает удобный вход.</p>
+    <ul><li>Ведущий не обязан сам выигрывать дуэль.</li><li>Главная ценность — коммуникация и заранее понятный маршрут отхода.</li><li>Разделение пары без плана резко снижает эффективность.</li></ul>`
+  },
+  {
+    id:"cover", cat:["pair","offense"], name:"Атакующий + прикрывающий",
+    desc:"Один выполняет проход, второй остаётся выше и наблюдает за реакцией второго противника.",
+    tags:["пара","эшелонирование","страховка"],
+    body:`<h3>Атакующий + прикрывающий</h3><p>В 2×2 часто эффективнее, чем две одновременные атаки на одну цель.</p>
+    <ul><li>Первый заставляет противника реагировать.</li><li>Второй сохраняет энергию и контролирует контратаку.</li><li>После прохода роли можно менять.</li></ul>`
+  },
+  {
+    id:"extension", cat:["defense","energy"], name:"Extension",
+    desc:"Разрыв дистанции на скорости вместо немедленного разворота.",
+    tags:["разрыв","сохранение энергии","перегруппировка"],
+    body:`<h3>Extension</h3><p>Когда атака сорвалась или положение стало неясным, разрыв часто лучше поспешного нового виража.</p>
+    <ul><li>Сначала создайте дистанцию.</li><li>Затем оцените положение пары.</li><li>Только после этого возвращайтесь в бой.</li></ul>`
+  }
+];
+
+const $ = id => document.getElementById(id);
+const own = $("ownAircraft"), enemy = $("enemyAircraft"), ownAlt = $("ownAlt"),
+enemyAlt = $("enemyAlt"), energy = $("energy"), position = $("position"), mode = $("mode");
+
+function renderCards(filter="all"){
+  const box = $("tacticCards"); box.innerHTML="";
+  tactics.filter(t=>filter==="all"||t.cat.includes(filter)).forEach(t=>{
+    const el=document.createElement("div"); el.className="card";
+    el.innerHTML=`<h4>${t.name}</h4><p>${t.desc}</p>`+
+      t.tags.map((x,i)=>`<span class="tag ${i===0?'good':''}">${x}</span>`).join("");
+    el.onclick=()=>{$("detail").innerHTML=t.body};
+    box.appendChild(el);
+  });
+}
+
+function profileAdvice(){
+  const o=aircraft[own.value], e=aircraft[enemy.value];
+  const da=Number(ownAlt.value)-Number(enemyAlt.value);
+  let headline="", env="", pair="важна", status="";
+  if(position.value==="defensive"){
+    status="оборона";
+    headline=`Вы под атакой. Приоритет — сорвать первое решение противника, сохранить скорость и не отделяться от напарника.`;
+  }else if(da>700 && energy.value!=="low"){
+    status="инициатива";
+    headline=`У вас заметное преимущество по высоте. Логичен энергетический бой: короткий проход, разрыв, восстановление высоты.`;
+  }else if(da<-700){
+    status="ниже противника";
+    headline=`Противник выше. Не тянитесь к нему вверх без запаса скорости: лучше сохранить энергию, вынудить его пройти мимо и искать контратаку.`;
+  }else{
+    status="равный бой";
+    headline=`Разница высот невелика. Решать будут скорость, строй пары и умение не ввязываться в невыгодный тип манёвра.`;
+  }
+
+  if(own.value==="bf109"){
+    env = Number(ownAlt.value)>=3500 ? "вертикаль" : "скорость";
+  } else {
+    env = Number(ownAlt.value)<=3000 ? "низкий/средний эшелон" : "манёвр";
+  }
+  if(mode.value==="duel") pair="не применяется";
+
+  $("headlineReco").textContent=headline;
+  $("statusBadge").textContent=status;
+  $("altDelta").textContent=(da>=0?"+":"")+da+" м";
+  $("energyScore").textContent=energy.value==="high"?"Высокая":energy.value==="equal"?"Средняя":"Низкая";
+  $("favEnv").textContent=env;
+  $("pairValue").textContent=pair;
+
+  let logic=`<h3>${o.name} против ${e.name}</h3>`;
+  logic+=`<p><b>Ваши сильные стороны:</b> ${o.strengths.join(", ")}.</p>`;
+  logic+=`<p><b>Избегать:</b> ${o.weak.join(", ")}.</p>`;
+  if(mode.value==="pair"){
+    logic+=`<p><b>В 2×2:</b> сохраняйте визуальный контакт с напарником. Один самолёт может создавать угрозу, второй — страховать и использовать реакцию противника.</p>`;
+  }else{
+    logic+=`<p><b>В 1×1:</b> больше внимания уделяйте управлению дистанцией и переходу между вертикальным и горизонтальным манёвром.</p>`;
+  }
+  $("logicText").innerHTML=logic;
+  drawDiagram(da);
+}
+
+function drawDiagram(da){
+  const ownY = Math.max(70, 230 - da/20);
+  const enemyY = Math.min(250, 190 + da/25);
+  const offensive = position.value!=="defensive";
+  const ownPath = offensive
+    ? `M110 ${ownY} C230 ${ownY-35}, 300 ${enemyY-40}, 390 ${enemyY} S520 ${enemyY+55}, 650 ${ownY-10}`
+    : `M110 ${ownY} C230 ${ownY+20}, 300 ${ownY+70}, 380 ${ownY+15} S520 ${ownY-50}, 650 ${ownY}`;
+  const enemyPath = offensive
+    ? `M120 ${enemyY} C250 ${enemyY+10}, 340 ${enemyY}, 470 ${enemyY+20} S610 ${enemyY+5}, 680 ${enemyY}`
+    : `M120 ${enemyY} C250 ${enemyY-20}, 340 ${ownY+5}, 450 ${ownY+10} S590 ${enemyY}, 680 ${enemyY+15}`;
+
+  $("ownPath").innerHTML=`<path d="${ownPath}" fill="none" stroke="#72a7ff" stroke-width="5" marker-end="url(#arrowBlue)"/>`;
+  $("enemyPath").innerHTML=`<path d="${enemyPath}" fill="none" stroke="#ff7f7f" stroke-width="5" marker-end="url(#arrowRed)"/>`;
+  $("labels").innerHTML=`
+    <text x="72" y="${ownY-12}" fill="#9ec2ff" font-size="16">${aircraft[own.value].name}</text>
+    <text x="72" y="${enemyY+28}" fill="#ffaaaa" font-size="16">${aircraft[enemy.value].name}</text>
+    <text x="590" y="322" fill="#7890a5" font-size="13">условная земля</text>`;
+}
+
+function update(){
+  $("ownAltOut").textContent=ownAlt.value+" м";
+  $("enemyAltOut").textContent=enemyAlt.value+" м";
+  profileAdvice();
+}
+
+document.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",update));
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  renderCards(btn.dataset.filter);
+}));
+
+$("randomBtn").onclick=()=>{
+  const vals=["bf109","la5"];
+  own.value=vals[Math.floor(Math.random()*2)];
+  enemy.value=own.value==="bf109"?"la5":"bf109";
+  ownAlt.value=[1500,2000,2500,3000,3500,4000,4500][Math.floor(Math.random()*7)];
+  enemyAlt.value=[1500,2000,2500,3000,3500,4000,4500][Math.floor(Math.random()*7)];
+  energy.value=["high","equal","low"][Math.floor(Math.random()*3)];
+  position.value=["offensive","neutral","defensive"][Math.floor(Math.random()*3)];
+  update();
+};
+
+renderCards();
+update();
+</script>
+</body>
+</html>
